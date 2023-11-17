@@ -8,7 +8,7 @@ type Interpreter struct {
 	parser *Parser
 }
 
-var GLOBAL_SCOPE = map[string]int{}
+var GLOBAL_SCOPE = map[string]interface{}{}
 
 func (i *Interpreter) Interpret() {
 	rootNode := i.parser.Parse()

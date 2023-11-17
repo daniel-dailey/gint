@@ -43,10 +43,13 @@ type BinaryOperator struct {
 func (bo *BinaryOperator) visit() (interface{}, ReturnType) {
 	if bo.op != nil {
 		log.Println("visit binop")
-		l, _ := bo.left.visit()
-		r, _ := bo.right.visit()
+		l, lrt := bo.left.visit()
+		r, rrt := bo.right.visit()
 		switch bo.op.Type {
 		case TOKEN_TYPE_ADDITION:
+			if lrt == TYPE_FLOAT || rrt == TYPE_FLOAT {
+				//
+			}
 			return l.(int) + r.(int), TYPE_INT
 		case TOKEN_TYPE_SUBTRACTION:
 			return l.(int) - r.(int), TYPE_INT
@@ -55,7 +58,7 @@ func (bo *BinaryOperator) visit() (interface{}, ReturnType) {
 		case TOKEN_TYPE_INTEGER_DIV:
 			return l.(int) / r.(int), TYPE_INT
 		case TOKEN_TYPE_FLOAT_DIV:
-			return l.(float64) - r.(float64), TYPE_FLOAT
+			return l.(float64) / r.(float64), TYPE_FLOAT
 		}
 	}
 	return nil, TYPE_NIL

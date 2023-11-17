@@ -164,17 +164,17 @@ func (p *Parser) term() AST {
 	if factorNode == nil {
 		return nil
 	}
-	token := p.CurToken
-	for token.Type == TOKEN_TYPE_MULTIPLICATION ||
-		token.Type == TOKEN_TYPE_INTEGER_DIV ||
-		token.Type == TOKEN_TYPE_FLOAT_DIV {
-		p.consume(token.Type)
+	for p.CurToken.Type == TOKEN_TYPE_MULTIPLICATION ||
+		p.CurToken.Type == TOKEN_TYPE_INTEGER_DIV ||
+		p.CurToken.Type == TOKEN_TYPE_FLOAT_DIV {
+		t := p.CurToken
+		p.consume(t.Type)
 		otherFactorNode := p.factor()
 		if factorNode == nil {
 			log.Println("ERROR: node is nil!")
 			return nil
 		}
-		binaryOperator := NewBinaryOp(factorNode, otherFactorNode, token)
+		binaryOperator := NewBinaryOp(factorNode, otherFactorNode, t)
 		factorNode = binaryOperator
 	}
 	return factorNode

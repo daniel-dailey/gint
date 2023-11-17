@@ -9,7 +9,15 @@ type Num struct {
 
 func (n *Num) visit() (interface{}, ReturnType) {
 	log.Println("Num visit: ", n.val)
-	return n.val, TYPE_INT
+	switch n.val.(type) {
+	case int:
+		return n.val, TYPE_INT
+	case float64:
+		return n.val, TYPE_FLOAT
+	default:
+		return nil, TYPE_NIL
+	}
+	// return n.val, TYPE_INT
 }
 
 func NewNum(t *Token) *Num {
