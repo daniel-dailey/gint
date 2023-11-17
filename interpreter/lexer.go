@@ -41,15 +41,13 @@ func (l *Lexer) isUpperCase() bool {
 }
 
 func (l *Lexer) isAlnum() bool {
-	return l.isDigit() || l.isLowerCase() || l.isUpperCase()
+	return l.isLowerCase() || l.isUpperCase()
 }
 
 func (l *Lexer) getNextToken() *Token {
 	for l.curRune != -1 {
 		l.skipWhitespace()
-		log.Println(string(l.curRune))
 		if l.curRune == '{' {
-			log.Println("FOUND COMMENT OPEN")
 			l.advance()
 			l.skipComment()
 			continue
@@ -58,12 +56,10 @@ func (l *Lexer) getNextToken() *Token {
 			return l.keyword()
 		}
 		if l.isDigit() {
-			return NewToken(TOKEN_TYPE_INT, l.number())
+			return l.number()
 		}
-		log.Println("getNextToken: looking at other chars...")
 		//Handle special runes
 		if l.curRune == COLON_CHAR && l.peek() == ASSIGN_CHAR {
-			log.Println("handling special chars...")
 			l.advance()
 			l.advance()
 			return NewToken(TOKEN_TYPE_ASSIGN, ":=")
@@ -80,19 +76,18 @@ func (l *Lexer) getNextToken() *Token {
 
 func (l *Lexer) keyword() *Token {
 	res := ""
-	for l.curRune != -1 && l.isAlnum() {
+	for l.curRune != -1 && (l.isAlnum() || l.isDigit()) {
 		res += string(l.curRune)
 		l.advance()
 	}
-	log.Println("keyword: ", res)
 	if tokenType, ok := RESERVED_WORDS[res]; ok {
 		return NewToken(tokenType, 0)
 	}
-	log.Println("build id token", res)
 	return NewToken(TOKEN_TYPE_ID, res)
 }
 
 func (l *Lexer) number() *Token {
+	log.Println("num build")
 	ret := ""
 	for l.curRune != -1 && l.isDigit() {
 		ret += string(l.curRune)
@@ -109,13 +104,19 @@ func (l *Lexer) number() *Token {
 		if err != nil {
 			return nil
 		}
+		log.Println("Return new real")
 		return NewToken(TOKEN_TYPE_REAL_CONST, val)
 	}
+	log.Println("dd")
+
 	val, err := strconv.Atoi(ret)
 	if err != nil {
 		return nil
 	}
-	return NewToken(TOKEN_TYPE_INTEGER_CONST, val)
+	log.Println("val: ", val)
+	token := NewToken(TOKEN_TYPE_INTEGER_CONST, val)
+	log.Println(token.String())
+	return token
 }
 
 func (l *Lexer) skipWhitespace() {

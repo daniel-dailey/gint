@@ -74,6 +74,10 @@ func (tt TokenType) String() string {
 		return "SEMICOLON"
 	case TOKEN_TYPE_EOF:
 		return "EOF"
+	case TOKEN_TYPE_REAL_CONST:
+		return "REAL"
+	case TOKEN_TYPE_INTEGER_CONST:
+		return "INTEGER"
 	default:
 		return ""
 	}

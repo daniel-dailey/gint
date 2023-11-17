@@ -1,5 +1,7 @@
 package interpreter
 
+import "log"
+
 /*
 	UNARY OPERATOR
 */
@@ -40,6 +42,7 @@ type BinaryOperator struct {
 
 func (bo *BinaryOperator) visit() (interface{}, ReturnType) {
 	if bo.op != nil {
+		log.Println("visit binop")
 		l, _ := bo.left.visit()
 		r, _ := bo.right.visit()
 		switch bo.op.Type {
