@@ -58,16 +58,22 @@ func (tt TokenType) String() string {
 	switch tt {
 	case TOKEN_TYPE_INT:
 		return "(int)"
+	case TOKEN_TYPE_REAL:
+		return "(float64)"
 	case TOKEN_TYPE_ADDITION:
-		return "Addition"
+		return "+"
 	case TOKEN_TYPE_SUBTRACTION:
-		return "Subtraction"
+		return "-"
 	case TOKEN_TYPE_MULTIPLICATION:
-		return "Product"
+		return "*"
+	case TOKEN_TYPE_INTEGER_DIV:
+		return "/"
+	case TOKEN_TYPE_FLOAT_DIV:
+		return "float64(/)"
 	case TOKEN_TYPE_LPAREN:
-		return "Lparen"
+		return "LPAREN"
 	case TOKEN_TYPE_RPAREN:
-		return "Rparen"
+		return "RPAREN"
 	case TOKEN_TYPE_DOT:
 		return "DOT"
 	case TOKEN_TYPE_SEMICOLON:
@@ -78,6 +84,18 @@ func (tt TokenType) String() string {
 		return "REAL"
 	case TOKEN_TYPE_INTEGER_CONST:
 		return "INTEGER"
+	case TOKEN_TYPE_VAR:
+		return "VAR"
+	case TOKEN_TYPE_ASSIGN:
+		return "="
+	case TOKEN_TYPE_PROGRAM:
+		return "PROGRAM"
+	case TOKEN_TYPE_BEGIN:
+		return "BEGIN"
+	case TOKEN_TYPE_END:
+		return "END"
+	case TOKEN_TYPE_ID:
+		return "ID"
 	default:
 		return ""
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/daniel-dailey/gint/interpreter"
 )
 
-const debugProg = "PROGRAM Part10; VAR number : INTEGER; a, b, c, x : INTEGER; y : REAL; BEGIN {Part10} x := 1+1; END."
+const debugProg = "PROGRAM Part10; VAR number : INTEGER; a, b, c, x : INTEGER; y : REAL; BEGIN {Part10} a:= 2+99999; x := 1-1; END."
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)

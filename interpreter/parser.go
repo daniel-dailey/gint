@@ -26,6 +26,7 @@ func (p *Parser) program() AST {
 	p.consume(TOKEN_TYPE_PROGRAM)
 	varNode := p.variable()
 	progName := varNode.(*Var).val
+	log.Println("PROGNAME: ", progName)
 	p.consume(TOKEN_TYPE_SEMICOLON)
 	blockNode := p.block()
 	programNode := InitProgram(progName, blockNode)

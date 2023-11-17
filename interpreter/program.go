@@ -1,11 +1,14 @@
 package interpreter
 
+import "log"
+
 type Program struct {
 	name  string
 	block AST
 }
 
 func (p *Program) visit() (interface{}, ReturnType) {
+	log.Println("visit program...", p.name)
 	p.block.visit()
 	return nil, TYPE_NIL
 }
