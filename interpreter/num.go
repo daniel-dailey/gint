@@ -7,8 +7,8 @@ type Num struct {
 	val   int
 }
 
-func (n *Num) visit() int {
-	return n.val
+func (n *Num) visit() (interface{}, ReturnType) {
+	return n.val, TYPE_INT
 }
 
 func NewNum(t *Token) *Num {

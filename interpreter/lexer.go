@@ -12,13 +12,20 @@ type Lexer struct {
 }
 
 const (
-	SPACE_CHAR    = 0x20
-	ZERO_CHAR     = 0x30
-	NINE_CHAR     = 0x39
-	LOWER_A_CHAR  = 0x61
-	LOWER_Z_CHAR  = 0x7A
-	HIGHER_A_CHAR = 0x41
-	HIGHER_Z_CHAR = 0x5A
+	SPACE_CHAR       = 0x20
+	ZERO_CHAR        = 0x30
+	NINE_CHAR        = 0x39
+	LOWER_A_CHAR     = 0x61
+	LOWER_Z_CHAR     = 0x7A
+	HIGHER_A_CHAR    = 0x41
+	HIGHER_Z_CHAR    = 0x5A
+	OPEN_BRACE_CHAR  = 0x7B
+	CLOSE_BRACE_CHAR = 0x7D
+	PERIOD_CHAR      = 0x2E
+	COLON_CHAR       = 0x3A
+	ASSIGN_CHAR      = 0x3D
+
+	FLOAT_BITS = 64
 )
 
 func (l *Lexer) isDigit() bool {
@@ -40,15 +47,22 @@ func (l *Lexer) isAlnum() bool {
 func (l *Lexer) getNextToken() *Token {
 	for l.curRune != -1 {
 		l.skipWhitespace()
+		log.Println(string(l.curRune))
+		if l.curRune == '{' {
+			log.Println("FOUND COMMENT OPEN")
+			l.advance()
+			l.skipComment()
+			continue
+		}
 		if l.isAlnum() {
 			return l.keyword()
 		}
 		if l.isDigit() {
-			return NewToken(TOKEN_TYPE_INT, l.int())
+			return NewToken(TOKEN_TYPE_INT, l.number())
 		}
 		log.Println("getNextToken: looking at other chars...")
 		//Handle special runes
-		if l.curRune == ':' && l.peek() == '=' {
+		if l.curRune == COLON_CHAR && l.peek() == ASSIGN_CHAR {
 			log.Println("handling special chars...")
 			l.advance()
 			l.advance()
@@ -74,28 +88,48 @@ func (l *Lexer) keyword() *Token {
 	if tokenType, ok := RESERVED_WORDS[res]; ok {
 		return NewToken(tokenType, 0)
 	}
-	log.Println("build id token")
+	log.Println("build id token", res)
 	return NewToken(TOKEN_TYPE_ID, res)
 }
 
-func (l *Lexer) int() int {
+func (l *Lexer) number() *Token {
 	ret := ""
 	for l.curRune != -1 && l.isDigit() {
 		ret += string(l.curRune)
 		l.advance()
 	}
-	n, err := strconv.Atoi(ret)
-	log.Println("int: ", n)
-	if err != nil {
-		log.Fatal("Failed to convert int")
+	if l.curRune == PERIOD_CHAR {
+		ret += string(l.curRune)
+		l.advance()
+		for l.curRune != -1 && l.isDigit() {
+			ret += string(l.curRune)
+			l.advance()
+		}
+		val, err := strconv.ParseFloat(ret, FLOAT_BITS)
+		if err != nil {
+			return nil
+		}
+		return NewToken(TOKEN_TYPE_REAL_CONST, val)
 	}
-	return n
+	val, err := strconv.Atoi(ret)
+	if err != nil {
+		return nil
+	}
+	return NewToken(TOKEN_TYPE_INTEGER_CONST, val)
 }
 
 func (l *Lexer) skipWhitespace() {
-	for l.curRune == SPACE_CHAR {
+	for l.curRune == SPACE_CHAR || l.curRune == 0x0D || l.curRune == 0x0A {
 		l.advance()
 	}
+}
+
+func (l *Lexer) skipComment() {
+	for l.curRune != CLOSE_BRACE_CHAR {
+		l.advance()
+	}
+	//include closing brace
+	l.advance()
 }
 
 func (l *Lexer) peek() rune {

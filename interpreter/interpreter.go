@@ -11,8 +11,8 @@ type Interpreter struct {
 var GLOBAL_SCOPE = map[string]int{}
 
 func (i *Interpreter) Interpret() {
-	ret := i.parser.Parse()
-	ret.visit()
+	rootNode := i.parser.Parse()
+	rootNode.visit()
 	log.Println(GLOBAL_SCOPE)
 }
 

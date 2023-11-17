@@ -12,7 +12,7 @@ const (
 )
 
 type AST interface {
-	visit() int
+	visit() (interface{}, ReturnType)
 }
 
 type Parser struct {
@@ -37,7 +37,8 @@ func (p *Parser) factor() AST {
 		TOKEN_TYPE_SUBTRACTION:
 		p.consume(currentToken.Type)
 		return NewUnaryOp(currentToken, p.factor())
-	case TOKEN_TYPE_INT:
+	case TOKEN_TYPE_INTEGER_CONST,
+		TOKEN_TYPE_REAL_CONST:
 		p.consume(currentToken.Type)
 		return NewNum(currentToken)
 	case TOKEN_TYPE_LPAREN:
@@ -55,16 +56,17 @@ func (p *Parser) term() AST {
 	if factorNode == nil {
 		return nil
 	}
-	for p.CurToken.Type == TOKEN_TYPE_MULTIPLICATION ||
-		p.CurToken.Type == TOKEN_TYPE_DIVISION {
-		tempCurrentToken := p.CurToken
-		p.consume(tempCurrentToken.Type)
+	token := p.CurToken
+	for token.Type == TOKEN_TYPE_MULTIPLICATION ||
+		token.Type == TOKEN_TYPE_INTEGER_DIV ||
+		token.Type == TOKEN_TYPE_FLOAT_DIV {
+		p.consume(token.Type)
 		otherFactorNode := p.factor()
 		if factorNode == nil {
 			log.Println("ERROR: node is nil!")
 			return nil
 		}
-		binaryOperator := NewBinaryOp(factorNode, otherFactorNode, tempCurrentToken)
+		binaryOperator := NewBinaryOp(factorNode, otherFactorNode, token)
 		factorNode = binaryOperator
 	}
 	return factorNode
@@ -89,6 +91,57 @@ func (p *Parser) expression() AST {
 		expressionNode = NewBinaryOp(expressionNode, factorNode, t)
 	}
 	return expressionNode
+}
+
+func (p *Parser) block() AST {
+	log.Println("consume declarations...")
+	declarationNodes := p.declarations()
+	log.Println("consumed declarations...")
+
+	compoundStatementNode := p.compound()
+	node := InitBlock(declarationNodes, compoundStatementNode)
+	return node
+}
+
+func (p *Parser) declarations() []AST {
+	dec := make([]AST, 0)
+	if p.CurToken.Type == TOKEN_TYPE_VAR {
+		p.consume(TOKEN_TYPE_VAR)
+		for p.CurToken.Type == TOKEN_TYPE_ID {
+			varDec := p.variableDeclaration()
+			dec = append(dec, varDec...)
+			p.consume(TOKEN_TYPE_SEMICOLON)
+		}
+	}
+	return dec
+}
+
+func (p *Parser) variableDeclaration() []AST {
+	varNodes := make([]*Var, 0)
+	varNodes = append(varNodes, NewVar(p.CurToken))
+	p.consume(TOKEN_TYPE_ID)
+	for p.CurToken.Type == TOKEN_TYPE_COMMA {
+		p.consume(TOKEN_TYPE_COMMA)
+		varNodes = append(varNodes, NewVar(p.CurToken))
+		p.consume(TOKEN_TYPE_ID)
+	}
+	p.consume(TOKEN_TYPE_COLON)
+	typeNode := p.typeSpec()
+	varDeclarations := make([]AST, 0)
+	for _, vn := range varNodes {
+		varDeclarations = append(varDeclarations, InitVariableDeclaration(vn, typeNode))
+	}
+	return varDeclarations
+}
+
+func (p *Parser) typeSpec() AST {
+	token := p.CurToken
+	if token.Type == TOKEN_TYPE_INT {
+		p.consume(TOKEN_TYPE_INT)
+	} else {
+		p.consume(TOKEN_TYPE_REAL)
+	}
+	return InitType(token)
 }
 
 func (p *Parser) variable() AST {
@@ -162,9 +215,19 @@ func (p *Parser) compound() AST {
 }
 
 func (p *Parser) program() AST {
-	log.Println("getting compound...")
-	programNode := p.compound()
-	log.Println("Got compound!")
+	log.Println("consume program...")
+	p.consume(TOKEN_TYPE_PROGRAM)
+	log.Println("consumed program...")
+	varNode := p.variable()
+	progName := varNode.(*Var).val
+	log.Println("consumed prog name... ", progName)
+	log.Println("consume semicolon...")
+	p.consume(TOKEN_TYPE_SEMICOLON)
+	log.Println("consumed semicolon...")
+	log.Println("get block...")
+	blockNode := p.block()
+	log.Println("got block...")
+	programNode := InitProgram(progName, blockNode)
 	p.consume(TOKEN_TYPE_DOT)
 	return programNode
 }
