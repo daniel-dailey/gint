@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/daniel-dailey/gint/interpreter"
 )
 
 func main() {
@@ -18,9 +20,9 @@ func main() {
 			log.Fatal(err)
 		}
 		s := strings.Split(line, "\n")
-		lexer := NewLexer(s[0])
-		parser := NewParser(lexer)
-		interpreter := NewInterpreter(parser)
-		interpreter.Interpret()
+		lexer := interpreter.NewLexer(s[0])
+		parser := interpreter.NewParser(lexer)
+		gint := interpreter.NewInterpreter(parser)
+		gint.Interpret()
 	}
 }
