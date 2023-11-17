@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 type Num struct {
 	token *Token
 	val   int
@@ -10,8 +12,9 @@ func (n *Num) visit() int {
 }
 
 func NewNum(t *Token) *Num {
+	log.Println("NEW NUM: ", t.String(), t.Value)
 	return &Num{
 		token: t,
-		val:   t.Value,
+		val:   t.Value.(int),
 	}
 }

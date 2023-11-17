@@ -1,5 +1,10 @@
 package main
 
+import (
+	"log"
+	"strconv"
+)
+
 /*
 	UNARY OPERATOR
 */
@@ -58,4 +63,76 @@ func NewBinaryOp(l, r AST, op *Token) *BinaryOperator {
 		right: r,
 		op:    op,
 	}
+}
+
+type Compound struct {
+	children []AST
+}
+
+func (c *Compound) visit() int {
+	for _, child := range c.children {
+		child.visit()
+	}
+	return 0
+}
+
+func NewCompound() *Compound {
+	return &Compound{
+		children: make([]AST, 0),
+	}
+}
+
+type Assign struct {
+	left  AST
+	right AST
+	op    *Token
+}
+
+func (a *Assign) visit() int {
+	variableName := a.left.(*Var).val
+	log.Println("assign visit: var name: ", variableName)
+	GLOBAL_SCOPE[variableName] = a.right.visit()
+	log.Println("visited...")
+	return 0
+}
+
+func NewAssign(l, r AST, op *Token) *Assign {
+	return &Assign{
+		left:  l,
+		right: r,
+		op:    op,
+	}
+}
+
+type Var struct {
+	token *Token
+	val   string
+}
+
+func (v *Var) visit() int {
+	variableName := v.val
+	if val, ok := GLOBAL_SCOPE[variableName]; ok {
+		return val
+	}
+	s, _ := strconv.Atoi(v.val)
+	// log.Fatalln("name err... ", variableName, v.token.Value)
+	return s
+}
+
+func NewVar(t *Token) *Var {
+	return &Var{
+		token: t,
+		val:   t.Value.(string),
+	}
+}
+
+type NoOp struct {
+}
+
+func (no *NoOp) visit() int {
+	return 0
+}
+
+func NewNoOp() *NoOp {
+	return &NoOp{}
 }

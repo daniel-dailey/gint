@@ -37,56 +37,24 @@ func (l *Lexer) isAlnum() bool {
 	return l.isDigit() || l.isLowerCase() || l.isUpperCase()
 }
 
-func (l *Lexer) peek() rune {
-	if l.pos+1 > len(l.buf)-1 {
-		return -1
-	}
-	return rune(l.buf[l.pos+1])
-}
-
-func (l *Lexer) keyword() *Token {
-	res := ""
-	for l.curRune != -1 && l.isAlnum() {
-		res += string(l.curRune)
-		l.advance()
-	}
-	tokenType := RESERVED_WORDS[res]
-	return NewToken(tokenType, 0)
-}
-
-func (l *Lexer) int() int {
-	ret := ""
-	for l.curRune != -1 && l.isDigit() {
-		ret += string(l.curRune)
-		l.advance()
-	}
-	n, err := strconv.Atoi(ret)
-	if err != nil {
-		log.Fatal("Failed to convert int")
-	}
-	return n
-}
-
 func (l *Lexer) getNextToken() *Token {
 	for l.curRune != -1 {
-		for l.curRune == SPACE_CHAR {
-			l.advance()
-		}
+		l.skipWhitespace()
 		if l.isAlnum() {
 			return l.keyword()
-		}
-		//Handle special runes
-		switch l.curRune {
-		case ':':
-			if l.peek() == '=' {
-				l.advance()
-				l.advance()
-				return NewToken(TOKEN_TYPE_ASSIGN, -1)
-			}
 		}
 		if l.isDigit() {
 			return NewToken(TOKEN_TYPE_INT, l.int())
 		}
+		log.Println("getNextToken: looking at other chars...")
+		//Handle special runes
+		if l.curRune == ':' && l.peek() == '=' {
+			log.Println("handling special chars...")
+			l.advance()
+			l.advance()
+			return NewToken(TOKEN_TYPE_ASSIGN, ":=")
+		}
+
 		if tt, ok := TOKEN_TYPES[l.curRune]; ok {
 			l.advance()
 			return NewToken(tt, -1)
@@ -96,8 +64,45 @@ func (l *Lexer) getNextToken() *Token {
 	return NewToken(TOKEN_TYPE_EOF, -1)
 }
 
-func (l *Lexer) Error() {
-	log.Fatal("failed to parse input")
+func (l *Lexer) keyword() *Token {
+	res := ""
+	for l.curRune != -1 && l.isAlnum() {
+		res += string(l.curRune)
+		l.advance()
+	}
+	log.Println("keyword: ", res)
+	if tokenType, ok := RESERVED_WORDS[res]; ok {
+		return NewToken(tokenType, 0)
+	}
+	log.Println("build id token")
+	return NewToken(TOKEN_TYPE_ID, res)
+}
+
+func (l *Lexer) int() int {
+	ret := ""
+	for l.curRune != -1 && l.isDigit() {
+		ret += string(l.curRune)
+		l.advance()
+	}
+	n, err := strconv.Atoi(ret)
+	log.Println("int: ", n)
+	if err != nil {
+		log.Fatal("Failed to convert int")
+	}
+	return n
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.curRune == SPACE_CHAR {
+		l.advance()
+	}
+}
+
+func (l *Lexer) peek() rune {
+	if l.pos+1 > len(l.buf)-1 {
+		return -1
+	}
+	return rune(l.buf[l.pos+1])
 }
 
 func (l *Lexer) advance() {
@@ -107,6 +112,10 @@ func (l *Lexer) advance() {
 		return
 	}
 	l.curRune = rune(l.buf[l.pos])
+}
+
+func (l *Lexer) Error() {
+	log.Fatal("invalid symbol")
 }
 
 func NewLexer(buf string) *Lexer {

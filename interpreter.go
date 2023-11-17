@@ -1,14 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"log"
+)
 
 type Interpreter struct {
 	parser *Parser
 }
 
+var GLOBAL_SCOPE = map[string]int{}
+
 func (i *Interpreter) Interpret() {
 	ret := i.parser.Parse()
-	fmt.Println(ret.visit())
+	ret.visit()
+	log.Println(GLOBAL_SCOPE)
 }
 
 func NewInterpreter(p *Parser) *Interpreter {

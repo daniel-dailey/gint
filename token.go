@@ -55,6 +55,14 @@ func (tt TokenType) String() string {
 		return "Product"
 	case TOKEN_TYPE_DIVISION:
 		return "Division"
+	case TOKEN_TYPE_LPAREN:
+		return "Lparen"
+	case TOKEN_TYPE_RPAREN:
+		return "Rparen"
+	case TOKEN_TYPE_DOT:
+		return "DOT"
+	case TOKEN_TYPE_SEMICOLON:
+		return "SEMICOLON"
 	case TOKEN_TYPE_EOF:
 		return "EOF"
 	default:
@@ -64,14 +72,14 @@ func (tt TokenType) String() string {
 
 type Token struct {
 	Type  TokenType
-	Value int
+	Value interface{}
 }
 
 func (t *Token) String() string {
 	return fmt.Sprintf("Token(%s, %d)", t.Type, t.Value)
 }
 
-func NewToken(t TokenType, v int) *Token {
+func NewToken(t TokenType, v interface{}) *Token {
 	return &Token{
 		Type:  t,
 		Value: v,
