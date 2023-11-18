@@ -5,8 +5,8 @@ type VariableDeclaration struct {
 	typeNode AST
 }
 
-func (vd *VariableDeclaration) visit() (interface{}, ReturnType) {
-	return nil, TYPE_NIL
+func (vd *VariableDeclaration) visit() interface{} {
+	return nil
 }
 
 func InitVariableDeclaration(v, t AST) *VariableDeclaration {

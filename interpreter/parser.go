@@ -5,7 +5,7 @@ import (
 )
 
 type AST interface {
-	visit() (interface{}, ReturnType)
+	visit() interface{}
 }
 
 type Parser struct {

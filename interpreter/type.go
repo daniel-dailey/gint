@@ -14,8 +14,8 @@ type Type struct {
 	value interface{}
 }
 
-func (t *Type) visit() (interface{}, ReturnType) {
-	return nil, TYPE_NIL
+func (t *Type) visit() interface{} {
+	return nil
 }
 
 func InitType(t *Token) *Type {

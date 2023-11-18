@@ -9,16 +9,16 @@ type UnaryOperator struct {
 	expr AST
 }
 
-func (uo *UnaryOperator) visit() (interface{}, ReturnType) {
+func (uo *UnaryOperator) visit() interface{} {
 	switch uo.op.Type {
 	case TOKEN_TYPE_ADDITION:
-		v, _ := uo.expr.visit()
-		return v.(int), TYPE_INT
+		v := uo.expr.visit()
+		return v.(int)
 	case TOKEN_TYPE_SUBTRACTION:
-		v, _ := uo.expr.visit()
-		return -v.(int), TYPE_INT
+		v := uo.expr.visit()
+		return -v.(int)
 	}
-	return nil, TYPE_NIL
+	return nil
 }
 
 func NewUnaryOp(token *Token, expr AST) *UnaryOperator {
@@ -42,24 +42,24 @@ type BinaryOperator struct {
 	op    *Token
 }
 
-func (bo *BinaryOperator) visit() (interface{}, ReturnType) {
+func (bo *BinaryOperator) visit() interface{} {
 	if bo.op != nil {
-		l, _ := bo.left.visit()
-		r, _ := bo.right.visit()
+		l := bo.left.visit()
+		r := bo.right.visit()
 		switch bo.op.Type {
 		case TOKEN_TYPE_ADDITION:
-			return l.(int) + r.(int), TYPE_INT
+			return l.(int) + r.(int)
 		case TOKEN_TYPE_SUBTRACTION:
-			return l.(int) - r.(int), TYPE_INT
+			return l.(int) - r.(int)
 		case TOKEN_TYPE_MULTIPLICATION:
-			return l.(int) * r.(int), TYPE_INT
+			return l.(int) * r.(int)
 		case TOKEN_TYPE_INTEGER_DIV:
-			return l.(int) / r.(int), TYPE_INT
+			return l.(int) / r.(int)
 		case TOKEN_TYPE_FLOAT_DIV:
-			return l.(float64) / r.(float64), TYPE_FLOAT
+			return l.(float64) / r.(float64)
 		}
 	}
-	return nil, TYPE_NIL
+	return nil
 }
 
 func NewBinaryOp(l, r AST, op *Token) *BinaryOperator {
@@ -73,8 +73,8 @@ func NewBinaryOp(l, r AST, op *Token) *BinaryOperator {
 type NoOp struct {
 }
 
-func (no *NoOp) visit() (interface{}, ReturnType) {
-	return nil, TYPE_NIL
+func (no *NoOp) visit() interface{} {
+	return nil
 }
 
 func NewNoOp() *NoOp {

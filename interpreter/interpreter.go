@@ -1,7 +1,7 @@
 package interpreter
 
 import (
-	"log"
+	"fmt"
 )
 
 type Interpreter struct {
@@ -13,10 +13,17 @@ var GLOBAL_SCOPE = map[string]interface{}{}
 func (i *Interpreter) Interpret() {
 	rootNode := i.parser.Parse()
 	rootNode.visit()
-	log.Println(GLOBAL_SCOPE)
+	fmt.Println("======================================================")
+	fmt.Println("=                      OUTPUT                        =")
+	fmt.Println("======================================================")
+	fmt.Println("======================================================")
+	fmt.Println("======================================================")
+	fmt.Println("=                    MEMORY MAP                      =")
+	fmt.Println("======================================================")
 	for k, v := range GLOBAL_SCOPE {
-		log.Printf("%s = %d", k, v)
+		fmt.Printf(">> %s = %d\n", k, v)
 	}
+	fmt.Println("======================================================")
 }
 
 func NewInterpreter(p *Parser) *Interpreter {

@@ -5,12 +5,12 @@ type Block struct {
 	compoundStatement AST
 }
 
-func (b *Block) visit() (interface{}, ReturnType) {
+func (b *Block) visit() interface{} {
 	for _, declaration := range b.declarations {
 		declaration.visit()
 	}
 	b.compoundStatement.visit()
-	return nil, TYPE_NIL
+	return nil
 }
 
 func InitBlock(declarations []AST, compoundStatement AST) *Block {

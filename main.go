@@ -35,6 +35,13 @@ func main() {
 			log.Fatal(err)
 		}
 		s := strings.Split(line, "\n")
+		cmd := s[0]
+		switch cmd {
+		case "help":
+			fmt.Printf("work in progress go-based pascal interpreter! \n input program as:\n" +
+				"\t-PROGRAM [name]; [VARS:TYPES]; [BLOCKS]; END.\n")
+			continue
+		}
 		lexer := interpreter.NewLexer(s[0])
 		parser := interpreter.NewParser(lexer)
 		gint := interpreter.NewInterpreter(parser)

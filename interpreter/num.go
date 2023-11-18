@@ -5,16 +5,8 @@ type Num struct {
 	val   interface{}
 }
 
-func (n *Num) visit() (interface{}, ReturnType) {
-	switch n.val.(type) {
-	case int:
-		return n.val, TYPE_INT
-	case float64:
-		return n.val, TYPE_FLOAT
-	default:
-		return nil, TYPE_NIL
-	}
-	// return n.val, TYPE_INT
+func (n *Num) visit() interface{} {
+	return n.val
 }
 
 func NewNum(t *Token) *Num {

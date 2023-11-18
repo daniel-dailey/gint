@@ -10,12 +10,12 @@ type Assign struct {
 	op    *Token
 }
 
-func (a *Assign) visit() (interface{}, ReturnType) {
+func (a *Assign) visit() interface{} {
 	variableName := a.left.(*Var).val
 	log.Println("assign visit: var name: ", variableName)
-	v, _ := a.right.visit()
+	v := a.right.visit()
 	GLOBAL_SCOPE[variableName] = v
-	return nil, TYPE_NIL
+	return nil
 }
 
 func NewAssign(l, r AST, op *Token) *Assign {

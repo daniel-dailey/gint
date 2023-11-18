@@ -7,10 +7,10 @@ type Program struct {
 	block AST
 }
 
-func (p *Program) visit() (interface{}, ReturnType) {
+func (p *Program) visit() interface{} {
 	log.Println("visit program...", p.name)
 	p.block.visit()
-	return nil, TYPE_NIL
+	return nil
 }
 
 func InitProgram(name string, block AST) *Program {
