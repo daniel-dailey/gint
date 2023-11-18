@@ -1,16 +1,18 @@
 package interpreter
 
 type VariableDeclaration struct {
-	varNode  AST
-	typeNode AST
+	typ      TreeNodeType
+	varNode  TreeNode
+	typeNode TreeNode
 }
 
-func (vd *VariableDeclaration) visit() interface{} {
-	return nil
+func (vd *VariableDeclaration) getType() TreeNodeType {
+	return vd.typ
 }
 
-func InitVariableDeclaration(v, t AST) *VariableDeclaration {
+func InitVariableDeclaration(v, t TreeNode) *VariableDeclaration {
 	return &VariableDeclaration{
+		typ:      TreeNodeTypeVariableDeclaration,
 		varNode:  v,
 		typeNode: t,
 	}

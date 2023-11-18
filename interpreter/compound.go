@@ -1,18 +1,17 @@
 package interpreter
 
 type Compound struct {
-	children []AST
+	typ      TreeNodeType
+	children []TreeNode
 }
 
-func (c *Compound) visit() interface{} {
-	for _, child := range c.children {
-		child.visit()
-	}
-	return nil
+func (c *Compound) getType() TreeNodeType {
+	return c.typ
 }
 
 func NewCompound() *Compound {
 	return &Compound{
-		children: make([]AST, 0),
+		typ:      TreeNodeTypeCompound,
+		children: make([]TreeNode, 0),
 	}
 }

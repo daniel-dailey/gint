@@ -1,16 +1,18 @@
 package interpreter
 
 type Num struct {
+	typ   TreeNodeType
 	token *Token
 	val   interface{}
 }
 
-func (n *Num) visit() interface{} {
-	return n.val
+func (n *Num) getType() TreeNodeType {
+	return n.typ
 }
 
 func NewNum(t *Token) *Num {
 	return &Num{
+		typ:   TreeNodeTypeNum,
 		token: t,
 		val:   t.Value,
 	}

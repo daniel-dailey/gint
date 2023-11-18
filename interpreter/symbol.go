@@ -91,7 +91,9 @@ func (st *SymbolTable) initBuiltinTypes() {
 }
 
 func InitSymbolTable() *SymbolTable {
-	return &SymbolTable{
+	st := &SymbolTable{
 		symbols: map[string]SymbolIntf{},
 	}
+	st.initBuiltinTypes()
+	return st
 }

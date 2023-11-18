@@ -5,24 +5,18 @@ package interpreter
 */
 
 type UnaryOperator struct {
+	typ  TreeNodeType
 	op   *Token
-	expr AST
+	expr TreeNode
 }
 
-func (uo *UnaryOperator) visit() interface{} {
-	switch uo.op.Type {
-	case TOKEN_TYPE_ADDITION:
-		v := uo.expr.visit()
-		return v.(int)
-	case TOKEN_TYPE_SUBTRACTION:
-		v := uo.expr.visit()
-		return -v.(int)
-	}
-	return nil
+func (uo *UnaryOperator) getType() TreeNodeType {
+	return uo.typ
 }
 
-func NewUnaryOp(token *Token, expr AST) *UnaryOperator {
+func NewUnaryOp(token *Token, expr TreeNode) *UnaryOperator {
 	return &UnaryOperator{
+		typ:  TreeNodeTypeUnaryOp,
 		op:   token,
 		expr: expr,
 	}
@@ -37,33 +31,19 @@ type RealNumber interface {
 }
 
 type BinaryOperator struct {
-	left  AST
-	right AST
+	typ   TreeNodeType
+	left  TreeNode
+	right TreeNode
 	op    *Token
 }
 
-func (bo *BinaryOperator) visit() interface{} {
-	if bo.op != nil {
-		l := bo.left.visit()
-		r := bo.right.visit()
-		switch bo.op.Type {
-		case TOKEN_TYPE_ADDITION:
-			return l.(int) + r.(int)
-		case TOKEN_TYPE_SUBTRACTION:
-			return l.(int) - r.(int)
-		case TOKEN_TYPE_MULTIPLICATION:
-			return l.(int) * r.(int)
-		case TOKEN_TYPE_INTEGER_DIV:
-			return l.(int) / r.(int)
-		case TOKEN_TYPE_FLOAT_DIV:
-			return l.(float64) / r.(float64)
-		}
-	}
-	return nil
+func (bo *BinaryOperator) getType() TreeNodeType {
+	return bo.typ
 }
 
-func NewBinaryOp(l, r AST, op *Token) *BinaryOperator {
+func NewBinaryOp(l, r TreeNode, op *Token) *BinaryOperator {
 	return &BinaryOperator{
+		typ:   TreeNodeTypeBinaryOp,
 		left:  l,
 		right: r,
 		op:    op,
@@ -71,12 +51,15 @@ func NewBinaryOp(l, r AST, op *Token) *BinaryOperator {
 }
 
 type NoOp struct {
+	typ TreeNodeType
 }
 
-func (no *NoOp) visit() interface{} {
-	return nil
+func (no *NoOp) getType() TreeNodeType {
+	return no.typ
 }
 
 func NewNoOp() *NoOp {
-	return &NoOp{}
+	return &NoOp{
+		typ: TreeNodeTypeNoOp,
+	}
 }

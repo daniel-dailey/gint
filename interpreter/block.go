@@ -1,20 +1,18 @@
 package interpreter
 
 type Block struct {
-	declarations      []AST
-	compoundStatement AST
+	typ               TreeNodeType
+	declarations      []TreeNode
+	compoundStatement TreeNode
 }
 
-func (b *Block) visit() interface{} {
-	for _, declaration := range b.declarations {
-		declaration.visit()
-	}
-	b.compoundStatement.visit()
-	return nil
+func (b *Block) getType() TreeNodeType {
+	return b.typ
 }
 
-func InitBlock(declarations []AST, compoundStatement AST) *Block {
+func InitBlock(declarations []TreeNode, compoundStatement TreeNode) *Block {
 	return &Block{
+		typ:               TreeNodeTypeBlock,
 		declarations:      declarations,
 		compoundStatement: compoundStatement,
 	}

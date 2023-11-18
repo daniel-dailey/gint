@@ -1,20 +1,18 @@
 package interpreter
 
-import "log"
-
 type Program struct {
+	typ   TreeNodeType
 	name  string
-	block AST
+	block TreeNode
 }
 
-func (p *Program) visit() interface{} {
-	log.Println("visit program...", p.name)
-	p.block.visit()
-	return nil
+func (p *Program) getType() TreeNodeType {
+	return p.typ
 }
 
-func InitProgram(name string, block AST) *Program {
+func InitProgram(name string, block TreeNode) *Program {
 	return &Program{
+		typ:   TreeNodeTypeProgram,
 		name:  name,
 		block: block,
 	}

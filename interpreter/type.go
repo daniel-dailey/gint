@@ -10,16 +10,22 @@ const (
 )
 
 type Type struct {
+	typ   TreeNodeType
 	token *Token
 	value interface{}
 }
 
-func (t *Type) visit() interface{} {
-	return nil
+func (t *Type) val() interface{} {
+	return t.value
+}
+
+func (t *Type) getType() TreeNodeType {
+	return t.typ
 }
 
 func InitType(t *Token) *Type {
 	return &Type{
+		typ:   TreeNodeTypeType,
 		token: t,
 		value: t.Value,
 	}

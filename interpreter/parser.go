@@ -4,8 +4,28 @@ import (
 	"log"
 )
 
-type AST interface {
-	visit() interface{}
+type TreeNodeType = int
+
+const (
+	TreeNodeTypeBinaryOp TreeNodeType = iota
+	TreeNodeTypeUnaryOp
+	TreeNodeTypeNoOp
+	TreeNodeTypeProgram
+	TreeNodeTypeBlock
+	TreeNodeTypeVariableDeclaration
+	TreeNodeTypeType
+	TreeNodeTypeVar
+	TreeNodeTypeCompound
+	TreeNodeTypeAssign
+	TreeNodeTypeNum
+)
+
+type TreeNode interface {
+	getType() TreeNodeType
+}
+
+type NodeWalker interface {
+	visit(node TreeNode)
 }
 
 type Parser struct {
@@ -22,7 +42,7 @@ func (p *Parser) consume(typ TokenType) {
 	p.Error()
 }
 
-func (p *Parser) program() AST {
+func (p *Parser) program() TreeNode {
 	p.consume(TOKEN_TYPE_PROGRAM)
 	varNode := p.variable()
 	progName := varNode.(*Var).val
@@ -33,15 +53,15 @@ func (p *Parser) program() AST {
 	return programNode
 }
 
-func (p *Parser) block() AST {
+func (p *Parser) block() TreeNode {
 	declarationNodes := p.declarations()
 	compoundStatementNode := p.compound()
 	node := InitBlock(declarationNodes, compoundStatementNode)
 	return node
 }
 
-func (p *Parser) declarations() []AST {
-	dec := make([]AST, 0)
+func (p *Parser) declarations() []TreeNode {
+	dec := make([]TreeNode, 0)
 	if p.CurToken.Type == TOKEN_TYPE_VAR {
 		p.consume(TOKEN_TYPE_VAR)
 		for p.CurToken.Type == TOKEN_TYPE_ID {
@@ -53,7 +73,7 @@ func (p *Parser) declarations() []AST {
 	return dec
 }
 
-func (p *Parser) variableDeclaration() []AST {
+func (p *Parser) variableDeclaration() []TreeNode {
 	varNodes := make([]*Var, 0)
 	varNodes = append(varNodes, NewVar(p.CurToken))
 	p.consume(TOKEN_TYPE_ID)
@@ -64,14 +84,14 @@ func (p *Parser) variableDeclaration() []AST {
 	}
 	p.consume(TOKEN_TYPE_COLON)
 	typeNode := p.typeSpec()
-	varDeclarations := make([]AST, 0)
+	varDeclarations := make([]TreeNode, 0)
 	for _, vn := range varNodes {
 		varDeclarations = append(varDeclarations, InitVariableDeclaration(vn, typeNode))
 	}
 	return varDeclarations
 }
 
-func (p *Parser) typeSpec() AST {
+func (p *Parser) typeSpec() TreeNode {
 	token := p.CurToken
 	if token.Type == TOKEN_TYPE_INT {
 		p.consume(TOKEN_TYPE_INT)
@@ -81,7 +101,7 @@ func (p *Parser) typeSpec() AST {
 	return InitType(token)
 }
 
-func (p *Parser) compound() AST {
+func (p *Parser) compound() TreeNode {
 	p.consume(TOKEN_TYPE_BEGIN)
 	statements := p.statements()
 	p.consume(TOKEN_TYPE_END)
@@ -90,9 +110,9 @@ func (p *Parser) compound() AST {
 	return c
 }
 
-func (p *Parser) statements() []AST {
+func (p *Parser) statements() []TreeNode {
 	statementNode := p.statement()
-	res := make([]AST, 0)
+	res := make([]TreeNode, 0)
 	res = append(res, statementNode)
 	for p.CurToken.Type == TOKEN_TYPE_SEMICOLON {
 		p.consume(TOKEN_TYPE_SEMICOLON)
@@ -101,7 +121,7 @@ func (p *Parser) statements() []AST {
 	return res
 }
 
-func (p *Parser) statement() AST {
+func (p *Parser) statement() TreeNode {
 	switch p.CurToken.Type {
 	case TOKEN_TYPE_BEGIN:
 		return p.compound()
@@ -112,7 +132,7 @@ func (p *Parser) statement() AST {
 	}
 }
 
-func (p *Parser) assign() AST {
+func (p *Parser) assign() TreeNode {
 	l := p.variable()
 	t := p.CurToken
 	p.consume(TOKEN_TYPE_ASSIGN)
@@ -121,18 +141,18 @@ func (p *Parser) assign() AST {
 	return node
 }
 
-func (p *Parser) variable() AST {
+func (p *Parser) variable() TreeNode {
 	log.Println("var: ", p.CurToken)
 	node := NewVar(p.CurToken)
 	p.consume(TOKEN_TYPE_ID)
 	return node
 }
 
-func (p *Parser) empty() AST {
+func (p *Parser) empty() TreeNode {
 	return NewNoOp()
 }
 
-func (p *Parser) expression() AST {
+func (p *Parser) expression() TreeNode {
 	expressionNode := p.term()
 	if expressionNode == nil {
 		log.Println("ERROR: node nil!")
@@ -152,7 +172,7 @@ func (p *Parser) expression() AST {
 	return expressionNode
 }
 
-func (p *Parser) term() AST {
+func (p *Parser) term() TreeNode {
 	factorNode := p.factor()
 	if factorNode == nil {
 		return nil
@@ -173,7 +193,7 @@ func (p *Parser) term() AST {
 	return factorNode
 }
 
-func (p *Parser) factor() AST {
+func (p *Parser) factor() TreeNode {
 	currentToken := p.CurToken
 	switch currentToken.Type {
 	case TOKEN_TYPE_ADDITION,
@@ -194,7 +214,7 @@ func (p *Parser) factor() AST {
 	}
 }
 
-func (p *Parser) Parse() AST {
+func (p *Parser) Parse() TreeNode {
 	node := p.program()
 	if p.CurToken.Type != TOKEN_TYPE_EOF {
 		p.Error()
