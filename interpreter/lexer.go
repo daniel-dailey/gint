@@ -87,7 +87,6 @@ func (l *Lexer) keyword() *Token {
 }
 
 func (l *Lexer) number() *Token {
-	log.Println("num build")
 	ret := ""
 	for l.curRune != -1 && l.isDigit() {
 		ret += string(l.curRune)
@@ -104,16 +103,12 @@ func (l *Lexer) number() *Token {
 		if err != nil {
 			return nil
 		}
-		log.Println("Return new real")
 		return NewToken(TOKEN_TYPE_REAL_CONST, val)
 	}
-	log.Println("dd")
-
 	val, err := strconv.Atoi(ret)
 	if err != nil {
 		return nil
 	}
-	log.Println("val: ", val)
 	token := NewToken(TOKEN_TYPE_INTEGER_CONST, val)
 	log.Println(token.String())
 	return token

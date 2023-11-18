@@ -1,7 +1,5 @@
 package interpreter
 
-import "log"
-
 /*
 	UNARY OPERATOR
 */
@@ -34,6 +32,10 @@ func NewUnaryOp(token *Token, expr AST) *UnaryOperator {
 	BINARY OPERATOR
 */
 
+type RealNumber interface {
+	int | float64
+}
+
 type BinaryOperator struct {
 	left  AST
 	right AST
@@ -42,14 +44,10 @@ type BinaryOperator struct {
 
 func (bo *BinaryOperator) visit() (interface{}, ReturnType) {
 	if bo.op != nil {
-		log.Println("visit binop")
-		l, lrt := bo.left.visit()
-		r, rrt := bo.right.visit()
+		l, _ := bo.left.visit()
+		r, _ := bo.right.visit()
 		switch bo.op.Type {
 		case TOKEN_TYPE_ADDITION:
-			if lrt == TYPE_FLOAT || rrt == TYPE_FLOAT {
-				//
-			}
 			return l.(int) + r.(int), TYPE_INT
 		case TOKEN_TYPE_SUBTRACTION:
 			return l.(int) - r.(int), TYPE_INT

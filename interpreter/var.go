@@ -1,7 +1,6 @@
 package interpreter
 
 import (
-	"log"
 	"strconv"
 )
 
@@ -12,12 +11,10 @@ type Var struct {
 
 func (v *Var) visit() (interface{}, ReturnType) {
 	variableName := v.val
-	log.Println("visit var: var name = ", variableName)
 	if val, ok := GLOBAL_SCOPE[variableName]; ok {
 		return val, TYPE_INT
 	}
 	s, _ := strconv.Atoi(v.val)
-	// log.Fatalln("name err... ", variableName, v.token.Value)
 	return s, TYPE_INT
 }
 

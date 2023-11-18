@@ -26,7 +26,6 @@ func (p *Parser) program() AST {
 	p.consume(TOKEN_TYPE_PROGRAM)
 	varNode := p.variable()
 	progName := varNode.(*Var).val
-	log.Println("PROGNAME: ", progName)
 	p.consume(TOKEN_TYPE_SEMICOLON)
 	blockNode := p.block()
 	programNode := InitProgram(progName, blockNode)
@@ -56,7 +55,6 @@ func (p *Parser) declarations() []AST {
 
 func (p *Parser) variableDeclaration() []AST {
 	varNodes := make([]*Var, 0)
-	log.Println("Attempting make var: ", p.CurToken)
 	varNodes = append(varNodes, NewVar(p.CurToken))
 	p.consume(TOKEN_TYPE_ID)
 	for p.CurToken.Type == TOKEN_TYPE_COMMA {
@@ -68,7 +66,6 @@ func (p *Parser) variableDeclaration() []AST {
 	typeNode := p.typeSpec()
 	varDeclarations := make([]AST, 0)
 	for _, vn := range varNodes {
-		log.Printf("var node name: %s", vn.token.String())
 		varDeclarations = append(varDeclarations, InitVariableDeclaration(vn, typeNode))
 	}
 	return varDeclarations
@@ -105,16 +102,12 @@ func (p *Parser) statements() []AST {
 }
 
 func (p *Parser) statement() AST {
-	log.Println("statement...")
 	switch p.CurToken.Type {
 	case TOKEN_TYPE_BEGIN:
-		log.Println("begin...")
 		return p.compound()
 	case TOKEN_TYPE_ID:
-		log.Println("id...")
 		return p.assign()
 	default:
-		log.Println("empty...")
 		return p.empty()
 	}
 }
@@ -202,11 +195,8 @@ func (p *Parser) factor() AST {
 }
 
 func (p *Parser) Parse() AST {
-	log.Println("parsing program...")
 	node := p.program()
-	log.Println("parsed program...", p.CurToken.String())
 	if p.CurToken.Type != TOKEN_TYPE_EOF {
-		log.Println("curToken.Type != TOKEN_TYPE_EOF")
 		p.Error()
 	}
 	return node
