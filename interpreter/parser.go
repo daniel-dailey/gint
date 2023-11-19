@@ -18,6 +18,7 @@ const (
 	TreeNodeTypeCompound
 	TreeNodeTypeAssign
 	TreeNodeTypeNum
+	TreeNodeTypeProcDec
 )
 
 type TreeNode interface {
@@ -65,6 +66,16 @@ func (p *Parser) declarations() []TreeNode {
 			dec = append(dec, varDec...)
 			p.consume(TOKEN_TYPE_SEMICOLON)
 		}
+	}
+	for p.CurToken.Type == TOKEN_TYPE_PROCEDURE {
+		p.consume(TOKEN_TYPE_PROCEDURE)
+		procName := p.CurToken.Value.(string)
+		p.consume(TOKEN_TYPE_ID)
+		p.consume(TOKEN_TYPE_SEMICOLON)
+		blockNode := p.block()
+		procDec := InitProcedureDeclaration(procName, blockNode)
+		dec = append(dec, procDec)
+		p.consume(TOKEN_TYPE_SEMICOLON)
 	}
 	return dec
 }

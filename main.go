@@ -14,8 +14,6 @@ import (
 const debugProg = "PROGRAM Part10; VAR number : INTEGER; a, b, c, x : INTEGER; y : REAL; BEGIN {Part10} a:= 2*2*6*777+555555; b := 10 * a + 10 * number DIV 4; x := 1; y := 20.0 / 7.9; END."
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-
 	debug := flag.Bool("debug", false, "run debug prog")
 	flag.Parse()
 
@@ -23,10 +21,11 @@ func main() {
 		log.Println("run debug prog...", debugProg)
 		lexer := interpreter.NewLexer(debugProg)
 		parser := interpreter.NewParser(lexer)
-		gint := interpreter.NewInterpreter(parser)
-		gint.Interpret()
+		interpreter.NewInterpreter(parser).Interpret(parser.Parse())
 		return
 	}
+
+	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		fmt.Print(">> ")
@@ -44,11 +43,10 @@ func main() {
 		}
 		lexer := interpreter.NewLexer(s[0])
 		parser := interpreter.NewParser(lexer)
-		tree := parser.Parse()
+		rootNode := parser.Parse()
 		stBuilder := interpreter.InitSymbolTableBuilder()
-		stBuilder.Visit(tree)
-		fmt.Println(stBuilder.SymbolTable)
-		gint := interpreter.NewInterpreter(parser)
-		gint.Interpret()
+		stBuilder.Visit(rootNode)
+		interpreter.NewInterpreter(parser).Interpret(rootNode)
+
 	}
 }

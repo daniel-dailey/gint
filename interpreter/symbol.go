@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"fmt"
-	"log"
 )
 
 type SymbolType int
@@ -81,7 +80,6 @@ func (st *SymbolTable) print() {
 }
 
 func (st *SymbolTable) insert(s SymbolIntf) {
-	log.Println("st insert: ", s.printname())
 	st.symbols[s.printname()] = s
 }
 
@@ -92,6 +90,8 @@ func (st *SymbolTable) lookup(name string) SymbolIntf {
 func (st *SymbolTable) initBuiltinTypes() {
 	st.insert(InitBuiltInTypeSymbol("INTEGER"))
 	st.insert(InitBuiltInTypeSymbol("REAL"))
+	st.insert(InitBuiltInTypeSymbol("integer"))
+	st.insert(InitBuiltInTypeSymbol("real"))
 }
 
 func InitSymbolTable() *SymbolTable {

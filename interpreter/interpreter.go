@@ -76,8 +76,7 @@ func (i *Interpreter) visit(node TreeNode) interface{} {
 	}
 }
 
-func (i *Interpreter) Interpret() {
-	rootNode := i.parser.Parse()
+func (i *Interpreter) Interpret(rootNode TreeNode) {
 	i.visit(rootNode)
 	fmt.Println("======================================================")
 	fmt.Println("=                      OUTPUT                        =")
