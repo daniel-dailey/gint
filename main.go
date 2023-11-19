@@ -44,10 +44,10 @@ func main() {
 		}
 		lexer := interpreter.NewLexer(s[0])
 		parser := interpreter.NewParser(lexer)
-		// tree := parser.Parse()
-		// stBuilder := interpreter.InitSymbolTableBuilder()
-		// stBuilder.Visit(tree)
-		// fmt.Println(stBuilder.SymbolTable)
+		tree := parser.Parse()
+		stBuilder := interpreter.InitSymbolTableBuilder()
+		stBuilder.Visit(tree)
+		fmt.Println(stBuilder.SymbolTable)
 		gint := interpreter.NewInterpreter(parser)
 		gint.Interpret()
 	}

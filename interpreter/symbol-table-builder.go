@@ -1,5 +1,7 @@
 package interpreter
 
+import "log"
+
 type SymbolTableBuilder struct {
 	*SymbolTable
 }
@@ -24,8 +26,27 @@ func (stb *SymbolTableBuilder) Visit(node TreeNode) {
 		for _, c := range node.(*Compound).children {
 			stb.Visit(c)
 		}
+	case TreeNodeTypeAssign:
+		varName := node.(*Assign).left.(*Var).val
+		varSymbol := stb.lookup(varName)
+		if varSymbol == nil {
+			log.Fatal("var symbol nil...")
+		}
+		stb.Visit(node.(*Assign).right)
+	case TreeNodeTypeVar:
+		varName := node.(*Var).val
+		varSymbol := stb.lookup(varName)
+		if varSymbol == nil {
+			log.Fatalf("var name %s nil...", varName)
+		}
+
 	case TreeNodeTypeVariableDeclaration:
+		log.Println(node)
 		typeName := node.(*VariableDeclaration).typeNode.(*Type).val()
+		symbol := stb.lookup(typeName.(string))
+		if symbol == nil {
+			log.Fatalln("treenode var declaration symbol lookup = nil")
+		}
 		typeSymbol := stb.lookup(typeName.(string)).(*BuiltInTypeSymbol)
 		varName := node.(*VariableDeclaration).varNode.(*Var).val
 		varSymbol := InitVarSymbol(varName, typeSymbol)
@@ -35,6 +56,6 @@ func (stb *SymbolTableBuilder) Visit(node TreeNode) {
 
 func InitSymbolTableBuilder() *SymbolTableBuilder {
 	return &SymbolTableBuilder{
-		&SymbolTable{symbols: make(map[string]SymbolIntf)},
+		InitSymbolTable(),
 	}
 }

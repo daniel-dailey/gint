@@ -81,7 +81,7 @@ func (l *Lexer) keyword() *Token {
 		l.advance()
 	}
 	if tokenType, ok := RESERVED_WORDS[res]; ok {
-		return NewToken(tokenType, 0)
+		return NewToken(tokenType, res)
 	}
 	return NewToken(TOKEN_TYPE_ID, res)
 }

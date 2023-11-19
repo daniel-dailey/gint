@@ -27,6 +27,9 @@ func (i *Interpreter) visit(node TreeNode) interface{} {
 		if bo.op != nil {
 			l := i.visit(bo.left)
 			r := i.visit(bo.right)
+			if l == nil || r == nil {
+				return nil
+			}
 			switch bo.op.Type {
 			case TOKEN_TYPE_ADDITION:
 				return l.(int) + r.(int)

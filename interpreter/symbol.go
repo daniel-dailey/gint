@@ -1,6 +1,9 @@
 package interpreter
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type SymbolType int
 
@@ -78,6 +81,7 @@ func (st *SymbolTable) print() {
 }
 
 func (st *SymbolTable) insert(s SymbolIntf) {
+	log.Println("st insert: ", s.printname())
 	st.symbols[s.printname()] = s
 }
 

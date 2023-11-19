@@ -24,10 +24,6 @@ type TreeNode interface {
 	getType() TreeNodeType
 }
 
-type NodeWalker interface {
-	visit(node TreeNode)
-}
-
 type Parser struct {
 	Lexer    *Lexer
 	CurToken *Token
