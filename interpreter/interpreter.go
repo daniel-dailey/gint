@@ -2,6 +2,9 @@ package interpreter
 
 import (
 	"fmt"
+
+	"github.com/daniel-dailey/gint/interpreter/nodes"
+	"github.com/daniel-dailey/gint/interpreter/token"
 )
 
 type Interpreter struct {
@@ -10,73 +13,73 @@ type Interpreter struct {
 
 var GLOBAL_SCOPE = map[string]interface{}{}
 
-func (i *Interpreter) visit(node TreeNode) interface{} {
-	switch node.getType() {
-	case TreeNodeTypeBlock:
-		b := node.(*Block)
-		for _, declaration := range b.declarations {
+func (i *Interpreter) visit(node nodes.TreeNode) interface{} {
+	switch node.GetType() {
+	case nodes.TreeNodeTypeBlock:
+		b := node.(*nodes.Block)
+		for _, declaration := range b.GetDeclarations() {
 			i.visit(declaration)
 		}
-		i.visit(b.compoundStatement)
+		i.visit(b.GetCompoundStatement())
 		return nil
-	case TreeNodeTypeProgram:
-		i.visit(node.(*Program).block)
+	case nodes.TreeNodeTypeProgram:
+		i.visit(node.(*nodes.Program).GetBlock())
 		return nil
-	case TreeNodeTypeBinaryOp:
-		bo := node.(*BinaryOperator)
-		if bo.op != nil {
-			l := i.visit(bo.left)
-			r := i.visit(bo.right)
+	case nodes.TreeNodeTypeBinaryOp:
+		bo := node.(*nodes.BinaryOperator)
+		if bo.GetOp() != nil {
+			l := i.visit(bo.GetLeftNode())
+			r := i.visit(bo.GetRightNode())
 			if l == nil || r == nil {
 				return nil
 			}
-			switch bo.op.Type {
-			case TOKEN_TYPE_ADDITION:
+			switch bo.GetOp().Type {
+			case token.TOKEN_TYPE_ADDITION:
 				return l.(int) + r.(int)
-			case TOKEN_TYPE_SUBTRACTION:
+			case token.TOKEN_TYPE_SUBTRACTION:
 				return l.(int) - r.(int)
-			case TOKEN_TYPE_MULTIPLICATION:
+			case token.TOKEN_TYPE_MULTIPLICATION:
 				return l.(int) * r.(int)
-			case TOKEN_TYPE_INTEGER_DIV:
+			case token.TOKEN_TYPE_INTEGER_DIV:
 				return l.(int) / r.(int)
-			case TOKEN_TYPE_FLOAT_DIV:
+			case token.TOKEN_TYPE_FLOAT_DIV:
 				return l.(float64) / r.(float64)
 			}
 		}
 		return nil
-	case TreeNodeTypeUnaryOp:
-		uo := node.(*UnaryOperator)
-		switch uo.op.Type {
-		case TOKEN_TYPE_ADDITION:
-			v := i.visit(uo.expr)
+	case nodes.TreeNodeTypeUnaryOp:
+		uo := node.(*nodes.UnaryOperator)
+		switch uo.GetOp().Type {
+		case token.TOKEN_TYPE_ADDITION:
+			v := i.visit(uo.GetExpression())
 			return v.(int)
-		case TOKEN_TYPE_SUBTRACTION:
-			v := i.visit(uo.expr)
+		case token.TOKEN_TYPE_SUBTRACTION:
+			v := i.visit(uo.GetExpression())
 			return -v.(int)
 		}
 		return nil
-	case TreeNodeTypeCompound:
-		for _, c := range node.(*Compound).children {
+	case nodes.TreeNodeTypeCompound:
+		for _, c := range node.(*nodes.Compound).GetChildren() {
 			i.visit(c)
 		}
 		return nil
-	case TreeNodeTypeVariableDeclaration:
+	case nodes.TreeNodeTypeVariableDeclaration:
 		return nil
-	case TreeNodeTypeAssign:
-		varName := node.(*Assign).left.(*Var).val
-		varValue := i.visit(node.(*Assign).right)
+	case nodes.TreeNodeTypeAssign:
+		varName := node.(*nodes.Assign).GetLeft().(*nodes.Var).GetVal()
+		varValue := i.visit(node.(*nodes.Assign).GetRight())
 		GLOBAL_SCOPE[varName] = varValue
 		return nil
-	case TreeNodeTypeVar:
-		return GLOBAL_SCOPE[node.(*Var).val]
-	case TreeNodeTypeNum:
-		return node.(*Num).val
+	case nodes.TreeNodeTypeVar:
+		return GLOBAL_SCOPE[node.(*nodes.Var).GetVal()]
+	case nodes.TreeNodeTypeNum:
+		return node.(*nodes.Num).GetVal()
 	default:
 		return nil
 	}
 }
 
-func (i *Interpreter) Interpret(rootNode TreeNode) {
+func (i *Interpreter) Interpret(rootNode nodes.TreeNode) {
 	i.visit(rootNode)
 	fmt.Println("======================================================")
 	fmt.Println("=                      OUTPUT                        =")

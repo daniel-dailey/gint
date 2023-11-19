@@ -1,4 +1,6 @@
-package interpreter
+package nodes
+
+import "github.com/daniel-dailey/gint/interpreter/token"
 
 type ReturnType int
 
@@ -11,7 +13,7 @@ const (
 
 type Type struct {
 	typ   TreeNodeType
-	token *Token
+	token *token.Token
 	value interface{}
 }
 
@@ -19,11 +21,19 @@ func (t *Type) val() interface{} {
 	return t.value
 }
 
+func (t *Type) Val() interface{} {
+	return t.val()
+}
+
 func (t *Type) getType() TreeNodeType {
 	return t.typ
 }
 
-func InitType(t *Token) *Type {
+func (t *Type) GetType() TreeNodeType {
+	return t.getType()
+}
+
+func InitType(t *token.Token) *Type {
 	return &Type{
 		typ:   TreeNodeTypeType,
 		token: t,

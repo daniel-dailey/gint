@@ -3,6 +3,8 @@ package interpreter
 import (
 	"log"
 	"strconv"
+
+	"github.com/daniel-dailey/gint/interpreter/token"
 )
 
 type Lexer struct {
@@ -44,7 +46,7 @@ func (l *Lexer) isAlnum() bool {
 	return l.isLowerCase() || l.isUpperCase()
 }
 
-func (l *Lexer) getNextToken() *Token {
+func (l *Lexer) getNextToken() *token.Token {
 	for l.curRune != -1 {
 		l.skipWhitespace()
 		if l.curRune == '{' {
@@ -62,31 +64,31 @@ func (l *Lexer) getNextToken() *Token {
 		if l.curRune == COLON_CHAR && l.peek() == ASSIGN_CHAR {
 			l.advance()
 			l.advance()
-			return NewToken(TOKEN_TYPE_ASSIGN, ":=")
+			return token.NewToken(token.TOKEN_TYPE_ASSIGN, ":=")
 		}
 
-		if tt, ok := TOKEN_TYPES[l.curRune]; ok {
+		if tt, ok := token.TOKEN_TYPES[l.curRune]; ok {
 			l.advance()
-			return NewToken(tt, -1)
+			return token.NewToken(tt, -1)
 		}
 		l.Error()
 	}
-	return NewToken(TOKEN_TYPE_EOF, -1)
+	return token.NewToken(token.TOKEN_TYPE_EOF, -1)
 }
 
-func (l *Lexer) keyword() *Token {
+func (l *Lexer) keyword() *token.Token {
 	res := ""
 	for l.curRune != -1 && (l.isAlnum() || l.isDigit()) {
 		res += string(l.curRune)
 		l.advance()
 	}
-	if tokenType, ok := RESERVED_WORDS[res]; ok {
-		return NewToken(tokenType, res)
+	if tokenType, ok := token.RESERVED_WORDS[res]; ok {
+		return token.NewToken(tokenType, res)
 	}
-	return NewToken(TOKEN_TYPE_ID, res)
+	return token.NewToken(token.TOKEN_TYPE_ID, res)
 }
 
-func (l *Lexer) number() *Token {
+func (l *Lexer) number() *token.Token {
 	ret := ""
 	for l.curRune != -1 && l.isDigit() {
 		ret += string(l.curRune)
@@ -103,14 +105,13 @@ func (l *Lexer) number() *Token {
 		if err != nil {
 			return nil
 		}
-		return NewToken(TOKEN_TYPE_REAL_CONST, val)
+		return token.NewToken(token.TOKEN_TYPE_REAL_CONST, val)
 	}
 	val, err := strconv.Atoi(ret)
 	if err != nil {
 		return nil
 	}
-	token := NewToken(TOKEN_TYPE_INTEGER_CONST, val)
-	log.Println(token.String())
+	token := token.NewToken(token.TOKEN_TYPE_INTEGER_CONST, val)
 	return token
 }
 

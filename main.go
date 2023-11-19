@@ -11,15 +11,23 @@ import (
 	"github.com/daniel-dailey/gint/interpreter"
 )
 
-const debugProg = "PROGRAM Part10; VAR number : INTEGER; a, b, c, x : INTEGER; y : REAL; BEGIN {Part10} a:= 2*2*6*777+555555; b := 10 * a + 10 * number DIV 4; x := 1; y := 20.0 / 7.9; END."
-
 func main() {
 	debug := flag.Bool("debug", false, "run debug prog")
+	fileName := flag.String("f", "", "name of pascal file to interpret")
 	flag.Parse()
 
 	if *debug {
-		log.Println("run debug prog...", debugProg)
-		lexer := interpreter.NewLexer(debugProg)
+		//Debug flag is true. When I have a better logger in place,
+		// use this to set to debug level...
+		return
+	}
+
+	if len(*fileName) > 0 {
+		buf, err := os.ReadFile(*fileName)
+		if err != nil {
+			log.Panicln("error!", err.Error())
+		}
+		lexer := interpreter.NewLexer(string(buf))
 		parser := interpreter.NewParser(lexer)
 		interpreter.NewInterpreter(parser).Interpret(parser.Parse())
 		return
@@ -47,6 +55,5 @@ func main() {
 		stBuilder := interpreter.InitSymbolTableBuilder()
 		stBuilder.Visit(rootNode)
 		interpreter.NewInterpreter(parser).Interpret(rootNode)
-
 	}
 }

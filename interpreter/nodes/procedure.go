@@ -1,4 +1,4 @@
-package interpreter
+package nodes
 
 type ProcedureDeclaration struct {
 	typ       TreeNodeType
@@ -8,6 +8,10 @@ type ProcedureDeclaration struct {
 
 func (pd *ProcedureDeclaration) getType() TreeNodeType {
 	return pd.typ
+}
+
+func (pd *ProcedureDeclaration) GetType() TreeNodeType {
+	return pd.getType()
 }
 
 func InitProcedureDeclaration(procName string, b TreeNode) *ProcedureDeclaration {

@@ -2,171 +2,153 @@ package interpreter
 
 import (
 	"log"
+
+	"github.com/daniel-dailey/gint/interpreter/nodes"
+	"github.com/daniel-dailey/gint/interpreter/token"
 )
-
-type TreeNodeType = int
-
-const (
-	TreeNodeTypeBinaryOp TreeNodeType = iota
-	TreeNodeTypeUnaryOp
-	TreeNodeTypeNoOp
-	TreeNodeTypeProgram
-	TreeNodeTypeBlock
-	TreeNodeTypeVariableDeclaration
-	TreeNodeTypeType
-	TreeNodeTypeVar
-	TreeNodeTypeCompound
-	TreeNodeTypeAssign
-	TreeNodeTypeNum
-	TreeNodeTypeProcDec
-)
-
-type TreeNode interface {
-	getType() TreeNodeType
-}
 
 type Parser struct {
 	Lexer    *Lexer
-	CurToken *Token
+	CurToken *token.Token
 }
 
-func (p *Parser) consume(typ TokenType) {
+func (p *Parser) consume(typ token.TokenType) {
 	if p.CurToken.Type == typ {
 		p.CurToken = p.Lexer.getNextToken()
 		return
 	}
-	log.Printf("p.CurToken.Type(%s) != typ(%s)", p.CurToken.String(), typ.String())
 	p.Error()
 }
 
-func (p *Parser) program() TreeNode {
-	p.consume(TOKEN_TYPE_PROGRAM)
+func (p *Parser) program() nodes.TreeNode {
+	p.consume(token.TOKEN_TYPE_PROGRAM)
 	varNode := p.variable()
-	progName := varNode.(*Var).val
-	p.consume(TOKEN_TYPE_SEMICOLON)
+	progName := varNode.(*nodes.Var).GetVal()
+	p.consume(token.TOKEN_TYPE_SEMICOLON)
 	blockNode := p.block()
-	programNode := InitProgram(progName, blockNode)
-	p.consume(TOKEN_TYPE_DOT)
+	programNode := nodes.InitProgram(progName, blockNode)
+	p.consume(token.TOKEN_TYPE_DOT)
 	return programNode
 }
 
-func (p *Parser) block() TreeNode {
+func (p *Parser) block() nodes.TreeNode {
 	declarationNodes := p.declarations()
 	compoundStatementNode := p.compound()
-	node := InitBlock(declarationNodes, compoundStatementNode)
+	node := nodes.InitBlock(declarationNodes, compoundStatementNode)
 	return node
 }
 
-func (p *Parser) declarations() []TreeNode {
-	dec := make([]TreeNode, 0)
-	if p.CurToken.Type == TOKEN_TYPE_VAR {
-		p.consume(TOKEN_TYPE_VAR)
-		for p.CurToken.Type == TOKEN_TYPE_ID {
+func (p *Parser) declarations() []nodes.TreeNode {
+	dec := make([]nodes.TreeNode, 0)
+	if p.CurToken.Type == token.TOKEN_TYPE_VAR {
+		p.consume(token.TOKEN_TYPE_VAR)
+		for p.CurToken.Type == token.TOKEN_TYPE_ID {
 			varDec := p.variableDeclaration()
 			dec = append(dec, varDec...)
-			p.consume(TOKEN_TYPE_SEMICOLON)
+			p.consume(token.TOKEN_TYPE_SEMICOLON)
 		}
 	}
-	for p.CurToken.Type == TOKEN_TYPE_PROCEDURE {
-		p.consume(TOKEN_TYPE_PROCEDURE)
+	for p.CurToken.Type == token.TOKEN_TYPE_PROCEDURE {
+		p.consume(token.TOKEN_TYPE_PROCEDURE)
 		procName := p.CurToken.Value.(string)
-		p.consume(TOKEN_TYPE_ID)
-		p.consume(TOKEN_TYPE_SEMICOLON)
+		p.consume(token.TOKEN_TYPE_ID)
+		p.consume(token.TOKEN_TYPE_SEMICOLON)
 		blockNode := p.block()
-		procDec := InitProcedureDeclaration(procName, blockNode)
+		procDec := nodes.InitProcedureDeclaration(procName, blockNode)
 		dec = append(dec, procDec)
-		p.consume(TOKEN_TYPE_SEMICOLON)
+		p.consume(token.TOKEN_TYPE_SEMICOLON)
 	}
 	return dec
 }
 
-func (p *Parser) variableDeclaration() []TreeNode {
-	varNodes := make([]*Var, 0)
-	varNodes = append(varNodes, NewVar(p.CurToken))
-	p.consume(TOKEN_TYPE_ID)
-	for p.CurToken.Type == TOKEN_TYPE_COMMA {
-		p.consume(TOKEN_TYPE_COMMA)
-		varNodes = append(varNodes, NewVar(p.CurToken))
-		p.consume(TOKEN_TYPE_ID)
+func (p *Parser) variableDeclaration() []nodes.TreeNode {
+	varNodes := make([]*nodes.Var, 0)
+	varNodes = append(varNodes, nodes.NewVar(p.CurToken))
+	p.consume(token.TOKEN_TYPE_ID)
+	for p.CurToken.Type == token.TOKEN_TYPE_COMMA {
+		p.consume(token.TOKEN_TYPE_COMMA)
+		varNodes = append(varNodes, nodes.NewVar(p.CurToken))
+		p.consume(token.TOKEN_TYPE_ID)
 	}
-	p.consume(TOKEN_TYPE_COLON)
+	p.consume(token.TOKEN_TYPE_COLON)
 	typeNode := p.typeSpec()
-	varDeclarations := make([]TreeNode, 0)
+	varDeclarations := make([]nodes.TreeNode, 0)
 	for _, vn := range varNodes {
-		varDeclarations = append(varDeclarations, InitVariableDeclaration(vn, typeNode))
+		varDeclarations = append(varDeclarations, nodes.InitVariableDeclaration(vn, typeNode))
 	}
 	return varDeclarations
 }
 
-func (p *Parser) typeSpec() TreeNode {
-	token := p.CurToken
-	if token.Type == TOKEN_TYPE_INT {
-		p.consume(TOKEN_TYPE_INT)
+func (p *Parser) typeSpec() nodes.TreeNode {
+	t := p.CurToken
+	if t.Type == token.TOKEN_TYPE_INT {
+		p.consume(token.TOKEN_TYPE_INT)
 	} else {
-		p.consume(TOKEN_TYPE_REAL)
+		p.consume(token.TOKEN_TYPE_REAL)
 	}
-	return InitType(token)
+	return nodes.InitType(t)
 }
 
-func (p *Parser) compound() TreeNode {
-	p.consume(TOKEN_TYPE_BEGIN)
+func (p *Parser) compound() nodes.TreeNode {
+	p.consume(token.TOKEN_TYPE_BEGIN)
 	statements := p.statements()
-	p.consume(TOKEN_TYPE_END)
-	c := NewCompound()
-	c.children = append(c.children, statements...)
+	p.consume(token.TOKEN_TYPE_END)
+	c := nodes.NewCompound()
+	children := c.GetChildren()
+	children = append(children, statements...)
+	c.SetChildren(children)
 	return c
 }
 
-func (p *Parser) statements() []TreeNode {
+func (p *Parser) statements() []nodes.TreeNode {
 	statementNode := p.statement()
-	res := make([]TreeNode, 0)
+	res := make([]nodes.TreeNode, 0)
 	res = append(res, statementNode)
-	for p.CurToken.Type == TOKEN_TYPE_SEMICOLON {
-		p.consume(TOKEN_TYPE_SEMICOLON)
+	for p.CurToken.Type == token.TOKEN_TYPE_SEMICOLON {
+		p.consume(token.TOKEN_TYPE_SEMICOLON)
 		res = append(res, p.statement())
 	}
 	return res
 }
 
-func (p *Parser) statement() TreeNode {
+func (p *Parser) statement() nodes.TreeNode {
 	switch p.CurToken.Type {
-	case TOKEN_TYPE_BEGIN:
+	case token.TOKEN_TYPE_BEGIN:
 		return p.compound()
-	case TOKEN_TYPE_ID:
+	case token.TOKEN_TYPE_ID:
 		return p.assign()
 	default:
 		return p.empty()
 	}
 }
 
-func (p *Parser) assign() TreeNode {
+func (p *Parser) assign() nodes.TreeNode {
 	l := p.variable()
 	t := p.CurToken
-	p.consume(TOKEN_TYPE_ASSIGN)
+	p.consume(token.TOKEN_TYPE_ASSIGN)
 	r := p.expression()
-	node := NewAssign(l, r, t)
+	node := nodes.NewAssign(l, r, t)
 	return node
 }
 
-func (p *Parser) variable() TreeNode {
-	log.Println("var: ", p.CurToken)
-	node := NewVar(p.CurToken)
-	p.consume(TOKEN_TYPE_ID)
+func (p *Parser) variable() nodes.TreeNode {
+	node := nodes.NewVar(p.CurToken)
+	p.consume(token.TOKEN_TYPE_ID)
 	return node
 }
 
-func (p *Parser) empty() TreeNode {
-	return NewNoOp()
+func (p *Parser) empty() nodes.TreeNode {
+	return nodes.NewNoOp()
 }
 
-func (p *Parser) expression() TreeNode {
+func (p *Parser) expression() nodes.TreeNode {
 	expressionNode := p.term()
 	if expressionNode == nil {
 		log.Println("ERROR: node nil!")
 		return nil
 	}
-	for p.CurToken.Type == TOKEN_TYPE_ADDITION ||
-		p.CurToken.Type == TOKEN_TYPE_SUBTRACTION {
+	for p.CurToken.Type == token.TOKEN_TYPE_ADDITION ||
+		p.CurToken.Type == token.TOKEN_TYPE_SUBTRACTION {
 		t := p.CurToken
 		p.consume(t.Type)
 		factorNode := p.term()
@@ -174,19 +156,19 @@ func (p *Parser) expression() TreeNode {
 			log.Printf("ERROR: node nil!")
 			return nil
 		}
-		expressionNode = NewBinaryOp(expressionNode, factorNode, t)
+		expressionNode = nodes.NewBinaryOp(expressionNode, factorNode, t)
 	}
 	return expressionNode
 }
 
-func (p *Parser) term() TreeNode {
+func (p *Parser) term() nodes.TreeNode {
 	factorNode := p.factor()
 	if factorNode == nil {
 		return nil
 	}
-	for p.CurToken.Type == TOKEN_TYPE_MULTIPLICATION ||
-		p.CurToken.Type == TOKEN_TYPE_INTEGER_DIV ||
-		p.CurToken.Type == TOKEN_TYPE_FLOAT_DIV {
+	for p.CurToken.Type == token.TOKEN_TYPE_MULTIPLICATION ||
+		p.CurToken.Type == token.TOKEN_TYPE_INTEGER_DIV ||
+		p.CurToken.Type == token.TOKEN_TYPE_FLOAT_DIV {
 		t := p.CurToken
 		p.consume(t.Type)
 		otherFactorNode := p.factor()
@@ -194,36 +176,36 @@ func (p *Parser) term() TreeNode {
 			log.Println("ERROR: node is nil!")
 			return nil
 		}
-		binaryOperator := NewBinaryOp(factorNode, otherFactorNode, t)
+		binaryOperator := nodes.NewBinaryOp(factorNode, otherFactorNode, t)
 		factorNode = binaryOperator
 	}
 	return factorNode
 }
 
-func (p *Parser) factor() TreeNode {
+func (p *Parser) factor() nodes.TreeNode {
 	currentToken := p.CurToken
 	switch currentToken.Type {
-	case TOKEN_TYPE_ADDITION,
-		TOKEN_TYPE_SUBTRACTION:
+	case token.TOKEN_TYPE_ADDITION,
+		token.TOKEN_TYPE_SUBTRACTION:
 		p.consume(currentToken.Type)
-		return NewUnaryOp(currentToken, p.factor())
-	case TOKEN_TYPE_INTEGER_CONST,
-		TOKEN_TYPE_REAL_CONST:
+		return nodes.NewUnaryOp(currentToken, p.factor())
+	case token.TOKEN_TYPE_INTEGER_CONST,
+		token.TOKEN_TYPE_REAL_CONST:
 		p.consume(currentToken.Type)
-		return NewNum(currentToken)
-	case TOKEN_TYPE_LPAREN:
-		p.consume(TOKEN_TYPE_LPAREN)
+		return nodes.NewNum(currentToken)
+	case token.TOKEN_TYPE_LPAREN:
+		p.consume(token.TOKEN_TYPE_LPAREN)
 		node := p.expression()
-		p.consume(TOKEN_TYPE_RPAREN)
+		p.consume(token.TOKEN_TYPE_RPAREN)
 		return node
 	default:
 		return p.variable()
 	}
 }
 
-func (p *Parser) Parse() TreeNode {
+func (p *Parser) Parse() nodes.TreeNode {
 	node := p.program()
-	if p.CurToken.Type != TOKEN_TYPE_EOF {
+	if p.CurToken.Type != token.TOKEN_TYPE_EOF {
 		p.Error()
 	}
 	return node
